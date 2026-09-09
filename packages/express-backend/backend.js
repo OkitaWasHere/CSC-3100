@@ -50,17 +50,21 @@ const findUserByName = (name) => {
   return users["users_list"].filter((user) => user["name"] === name);
 };
 
-app.get("/users", (req, res) => {
-  const name = req.query.name;
-  if (name != undefined) {
-    let result = findUserByName(name);
-    result = { users_list: result };
-    res.send(result);
-  } else {
-    res.send(users);
-  }
-})
+// old get
+// app.get("/users", (req, res) => {
+//   const name = req.query.name;
+//   if (name != undefined) {
+//     let result = findUserByName(name);
+//     result = { users_list: result };
+//     res.send(result);
+//   } else {
+//     res.send(users);
+//   }
+// })
 
+
+// finding users
+// ex. localhost:8000/users/?name=Mac
 const findUserById = (id) =>
   users["users_list"].find((user) => user["id"] === id);
 
@@ -74,6 +78,10 @@ app.get("/users/:id", (req, res) => {
   }
 })
 
+
+// adding users
+// boomerang post request to add cindy user
+// check with another boomerang get request to see if cindy is a new user
 const addUser = (user) => {
   users["users_list"].push(user);
   return user;
@@ -83,4 +91,52 @@ app.post("/users", (req, res) => {
   const userToAdd = req.body;
   addUser(userToAdd);
   res.send();
+})
+
+// delete users
+const deleteUserById = (id) => {
+  const index = users["users_list"].findIndex(
+    (user) => user["id"] === id
+  );
+
+  if (index === -1) {
+    return undefined;
+  }
+
+  return users["users_list"].splice(index, 1)[0];
+}
+
+app.delete("/users/:id", (req, res) => {
+  const id = req.params["id"];
+  const deletedUser = deleteUserById(id);
+
+  if (deletedUser === undefined) {
+    res.status(404).send("Resource not found.");
+  } else {
+    res.send(deletedUser);
+  }
+})
+
+
+// search users by both name and job
+const findUsersByNameAndJob = (name, job) => {
+  return users["users_list"].filter(
+    (user) => user["name"] === name && user["job"] === job
+  );
+}
+
+// updated get
+app.get("/users", (req, res) => {
+  const name = req.query.name;
+  const job = req.query.job;
+
+  if (name !== undefined && job !== undefined) {
+    const result = findUsersByNameAndJob(name, job);
+    res.send({ users_list: result });
+  } else if (name !== undefined) {
+    const result = findUserByName(name);
+    res.send({ users_list: result });
+  } else {
+    res.send(users);
+  }
 });
