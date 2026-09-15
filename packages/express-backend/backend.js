@@ -46,6 +46,7 @@ const users = {
 }
 
 // returns the entire list of users
+// ex. localhost:8000/users/?name=Mac
 const findUserByName = (name) => {
   return users["users_list"].filter((user) => user["name"] === name);
 };
@@ -64,7 +65,7 @@ const findUserByName = (name) => {
 
 
 // finding users
-// ex. localhost:8000/users/?name=Mac
+// ex. localhost:8000/users/abc123
 const findUserById = (id) =>
   users["users_list"].find((user) => user["id"] === id);
 
@@ -119,6 +120,7 @@ app.delete("/users/:id", (req, res) => {
 
 
 // search users by both name and job
+// ex. localhost:8000/users/?name=Mac&job=Bouncer
 const findUsersByNameAndJob = (name, job) => {
   return users["users_list"].filter(
     (user) => user["name"] === name && user["job"] === job
