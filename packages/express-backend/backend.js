@@ -1,9 +1,11 @@
 // backend.js
 import express from "express";
+import cors from "cors";
 
 const app = express();
 const port = 8000;
 
+app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -79,19 +81,28 @@ app.get("/users/:id", (req, res) => {
   }
 })
 
+const generateId = () => {
+  return Math.random().toString(36).slice(2,8);
+}
+
 
 // adding users
 // boomerang post request to add cindy user
 // check with another boomerang get request to see if cindy is a new user
 const addUser = (user) => {
-  users["users_list"].push(user);
-  return user;
+  const newUser = {
+    ...user,
+    id: generateId(),
+};
+
+  users["users_list"].push(newUser);
+  return newUser;
 };
 
 app.post("/users", (req, res) => {
-  const userToAdd = req.body;
-  addUser(userToAdd);
-  res.send();
+  const newUser = addUser(req.body);
+  res.status(201).send(newUser);
+  
 })
 
 // delete users
@@ -114,9 +125,9 @@ app.delete("/users/:id", (req, res) => {
   if (deletedUser === undefined) {
     res.status(404).send("Resource not found.");
   } else {
-    res.send(deletedUser);
+    res.status(204).send();
   }
-})
+});
 
 
 // search users by both name and job
