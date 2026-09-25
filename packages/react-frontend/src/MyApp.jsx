@@ -1,26 +1,76 @@
 // src/MyApp.jsx
 import React, { useState, useEffect } from "react";
-
 import Table from "./Table";
 import Form from "./Form";
 
 function MyApp() {
   const [characters, setCharacters] = useState([]);
 
-  // src/MyApp.js (a new inner function inside MyApp())
   function fetchUsers() {
-    const promise = fetch("http://localhost:8000/users");
-    return promise;
+    return fetch("http://localhost:8000/users");
   }
 
   function postUser(person) {
-  return fetch("http://localhost:8000/users", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(person),
+    return fetch("http://localhost:8000/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(person),
     });
+  }
+
+  function deleteUser(id) {
+    return fetch(`http://localhost:8000/users/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  useEffect(() => {
+    fetchUsers()
+      .then((res) => res.json())
+      .then((json) => setCharacters(json.users_list))
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
+  function removeOneCharacter(id) {
+    deleteUser(id)
+      .then((response) => {
+        if (response.status !== 204) {
+          throw new Error("User was not deleted.");
+        }
+
+        setCharacters((currentCharacters) =>
+          currentCharacters.filter(
+            (character) => character._id !== id
+          )
+        );
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  function updateList(person) {
+    postUser(person)
+      .then((response) => {
+        if (response.status !== 201) {
+          throw new Error("User was not created.");
+        }
+
+        return response.json();
+      })
+      .then((newUser) => {
+        setCharacters((currentCharacters) => [
+          ...currentCharacters,
+          newUser,
+        ]);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   // src/MyApp.js (a new block inside MyApp())
@@ -79,7 +129,10 @@ function deleteUser(id) {
 
   return (
     <div className="container">
-      <Table characterData={characters} removeCharacter={removeOneCharacter} />
+      <Table
+        characterData={characters}
+        removeCharacter={removeOneCharacter}
+      />
       <Form handleSubmit={updateList} />
     </div>
   );
